@@ -23,14 +23,20 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# Custom Modern UI Styling
+# Custom Modern UI Styling (Muted / Pastel Executive Theme)
 # ---------------------------------------------------------
 st.markdown("""
 <style>
-    /* Global Styles */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Base Canvas - Soft Muted Porcelain */
     .stApp {
-        background-color: #0B0F19;
-        color: #F8FAFC;
+        background-color: #F8FAFC;
+        color: #1E293B;
     }
     
     /* Hide Streamlit default Deploy button and toolbar */
@@ -43,90 +49,118 @@ st.markdown("""
         visibility: hidden !important;
     }
     
-    /* Header Gradient Banner */
+    /* Clean Minimalist Header (Muted Card) */
     .hero-banner {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.12) 50%, rgba(236, 72, 153, 0.08) 100%);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 24px 32px;
-        margin-bottom: 24px;
-        backdrop-filter: blur(10px);
+        background-color: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 22px 28px;
+        margin-bottom: 22px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
     .hero-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        background: linear-gradient(90deg, #FFFFFF, #CBD5E1);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #0F172A;
         margin: 0;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.025em;
     }
     .hero-subtitle {
-        font-size: 1.05rem;
-        color: #94A3B8;
+        font-size: 0.95rem;
+        color: #64748B;
         margin-top: 6px;
         margin-bottom: 0px;
+        line-height: 1.5;
     }
     
-    /* Metric Cards */
+    /* Muted Metric Cards */
     .metric-card {
-        background: rgba(30, 41, 59, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px 22px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
     .metric-card:hover {
-        transform: translateY(-2px);
-        border-color: rgba(99, 102, 241, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+        border-color: #CBD5E1;
     }
     .metric-label {
-        font-size: 0.85rem;
+        font-size: 0.78rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #94A3B8;
-        margin-bottom: 8px;
+        color: #64748B;
+        margin-bottom: 6px;
     }
     .metric-value {
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: #FFFFFF;
-        line-height: 1.1;
+        font-size: 2.05rem;
+        font-weight: 700;
+        color: #0F172A;
+        line-height: 1.15;
     }
     .metric-footer {
-        font-size: 0.82rem;
-        color: #64748B;
+        font-size: 0.8rem;
+        color: #94A3B8;
         margin-top: 6px;
     }
+    
+    /* Muted Pastel Risk Indicators */
     .risk-high {
-        color: #F43F5E !important;
+        color: #BE123C !important; /* Muted Dusty Berry */
     }
     .risk-warning {
-        color: #F59E0B !important;
+        color: #B45309 !important; /* Soft Amber */
     }
     .risk-safe {
-        color: #10B981 !important;
+        color: #15803D !important; /* Soft Sage Green */
     }
 
-    /* Badges */
+    /* Soft Pastel Badges */
     .badge {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         padding: 4px 10px;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 500;
     }
     .badge-tabpfn {
-        background: rgba(99, 102, 241, 0.2);
-        color: #A5B4FC;
-        border: 1px solid rgba(99, 102, 241, 0.4);
+        background: #EEF2F6;
+        color: #334155;
+        border: 1px solid #CBD5E1;
     }
     .badge-fallback {
-        background: rgba(245, 158, 11, 0.2);
-        color: #FCD34D;
-        border: 1px solid rgba(245, 158, 11, 0.4);
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FDE68A;
+    }
+
+    /* Subtle Primary Button */
+    div.stButton > button:first-child {
+        background-color: #1E293B;
+        color: #FFFFFF;
+        border: 1px solid #0F172A;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 9px 18px;
+        transition: all 0.15s ease;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #334155;
+        color: #FFFFFF;
+        border-color: #1E293B;
+    }
+    div.stButton > button:first-child:active {
+        background-color: #0F172A;
+    }
+
+    /* Sidebar Background */
+    section[data-testid="stSidebar"] {
+        background-color: #F1F5F9;
+        border-right: 1px solid #E2E8F0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -316,11 +350,11 @@ st.markdown("""
         <div>
             <h1 class="hero-title">📉 RetentionAI: Subscription Churn Predictor</h1>
             <p class="hero-subtitle">
-                Foundation-model tabular intelligence powered by TabPFN & PriorLabs to identify at-risk subscribers and automate retention interventions.
+                Identify at-risk subscription accounts and prioritize targeted customer retention interventions.
             </p>
         </div>
         <div>
-            <span class="badge badge-tabpfn">TabPFN Client Ready</span>
+            <span class="badge badge-tabpfn">TabPFN Engine Ready</span>
         </div>
     </div>
 </div>
@@ -416,7 +450,7 @@ if "results" in st.session_state:
     st.markdown(
         f"<div style='margin-bottom: 16px;'>"
         f"Inference Engine: <span class='badge {badge_class}'>{engine_used}</span> &nbsp; "
-        f"<span style='color: #94A3B8; font-size: 0.85rem;'>Evaluated {len(results_df)} accounts in {elapsed:.2f}s</span>"
+        f"<span style='color: #64748B; font-size: 0.85rem;'>Evaluated {len(results_df)} accounts in {elapsed:.2f}s</span>"
         f"</div>",
         unsafe_allow_html=True
     )
@@ -446,7 +480,7 @@ if "results" in st.session_state:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">🚨 High-Risk Accounts</div>
-            <div class="metric-value risk-high">{high_risk_count} <span style="font-size: 1.1rem; color: #FDA4AF;">({risk_pct:.1f}%)</span></div>
+            <div class="metric-value risk-high">{high_risk_count} <span style="font-size: 1.05rem; font-weight: 600; color: #E11D48;">({risk_pct:.1f}%)</span></div>
             <div class="metric-footer">Predicted churn probability ≥ {risk_threshold}%</div>
         </div>
         """, unsafe_allow_html=True)
@@ -538,7 +572,7 @@ if "results" in st.session_state:
                 labels=["Low (<30%)", "Moderate (30-60%)", "Elevated (60-80%)", "Critical (80-100%)"]
             )
             bracket_counts = chart_df["Risk_Bracket"].value_counts().sort_index()
-            st.bar_chart(bracket_counts, color="#6366F1")
+            st.bar_chart(bracket_counts, color="#7C9A92")
             
         with chart_col2:
             st.markdown("##### Inactivity vs. Churn Probability")
@@ -547,7 +581,7 @@ if "results" in st.session_state:
                 scatter_df,
                 x="Days_Since_Last_Login",
                 y="Churn_Risk_%",
-                color="#EC4899"
+                color="#D4836A"
             )
 
         st.markdown("##### Revenue Breakdown by Prescribed Action")

@@ -10,10 +10,10 @@ toolbarMode = "minimal"
 showErrorDetails = false
 
 [theme]
-primaryColor = "#6366F1"
-backgroundColor = "#0F172A"
-secondaryBackgroundColor = "#1E293B"
-textColor = "#F8FAFC"
+primaryColor = "#475569"
+backgroundColor = "#F8FAFC"
+secondaryBackgroundColor = "#F1F5F9"
+textColor = "#0F172A"
 font = "sans serif"
 
 [browser]
