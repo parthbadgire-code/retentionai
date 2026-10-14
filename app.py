@@ -33,6 +33,16 @@ st.markdown("""
         color: #F8FAFC;
     }
     
+    /* Hide Streamlit default Deploy button and toolbar */
+    .stAppDeployButton,
+    [data-testid="stToolbarActions"],
+    [data-testid="manage-app-button"],
+    header[data-testid="stHeader"] button[title="Deploy"],
+    header[data-testid="stHeader"] .stDeployButton {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
     /* Header Gradient Banner */
     .hero-banner {
         background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.12) 50%, rgba(236, 72, 153, 0.08) 100%);
