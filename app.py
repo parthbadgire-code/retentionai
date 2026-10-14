@@ -655,9 +655,10 @@ if "results" in st.session_state:
     # ---------------------------------------------------------
     # Main Views Tabs
     # ---------------------------------------------------------
-    tab_report, tab_analytics, tab_inspector = st.tabs([
+    tab_report, tab_analytics, tab_simulator, tab_inspector = st.tabs([
         "📋 Prioritized Retention Action Playbook",
         "📊 Cohort Risk Factors & Revenue Impact",
+        "💡 What-If Retention ROI Simulator",
         "🔍 Single Subscriber Profile Inspector"
     ])
 
@@ -758,6 +759,192 @@ if "results" in st.session_state:
             hide_index=True,
             use_container_width=True
         )
+
+    with tab_simulator:
+        st.markdown("#### Interactive What-If Retention ROI Simulator")
+        st.caption("Model the financial impact of executing targeted retention campaigns across your high-risk subscriber base. Adjust conversion assumptions to forecast preserved MRR and net ROI.")
+
+        # Simulation Assumption Controls
+        st.markdown("""
+        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 12px;">
+                ⚙️ Campaign Conversion & Resolution Assumptions
+            </div>
+        """, unsafe_allow_html=True)
+        
+        sim_col1, sim_col2, sim_col3 = st.columns(3)
+        with sim_col1:
+            winback_rate = st.slider(
+                "🎁 20% Discount Win-Back Success",
+                min_value=10,
+                max_value=85,
+                value=35,
+                step=5,
+                format="%d%%",
+                help="Conversion rate of inactive subscribers (>21 days) accepting a 20% promotional discount."
+            )
+        with sim_col2:
+            support_fix_rate = st.slider(
+                "⚡ Support Ticket Fast-Track Success",
+                min_value=20,
+                max_value=95,
+                value=65,
+                step=5,
+                format="%d%%",
+                help="Retention rate when subscribers with ≥3 open tickets receive priority resolution & dedicated CS outreach."
+            )
+        with sim_col3:
+            vip_save_rate = st.slider(
+                "🤝 Executive 1-on-1 Review Success",
+                min_value=30,
+                max_value=95,
+                value=75,
+                step=5,
+                format="%d%%",
+                help="Retention rate for high-tier ($99/mo) accounts after a personalized executive review."
+            )
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # Simulation Calculations
+        sim_records = []
+        for _, row in results_df.iterrows():
+            cid = row["Customer_ID"]
+            spend = row["Monthly_Spend_USD"]
+            risk = row["Churn_Risk_%"]
+            tickets = row["Support_Tickets_Last_30D"]
+            inactive_days = row["Days_Since_Last_Login"]
+            
+            is_high_risk = (risk >= risk_threshold)
+            
+            # Policy Matching
+            campaign = "General Nurture"
+            prob_retained = 0.15
+            discount_cost = 0.0
+            
+            if tickets >= 3:
+                campaign = "Priority Support Resolution"
+                prob_retained = support_fix_rate / 100.0
+            elif inactive_days > 21:
+                campaign = "20% Win-Back Discount"
+                prob_retained = winback_rate / 100.0
+                discount_cost = spend * 0.20 * prob_retained
+            elif spend >= 99 and is_high_risk:
+                campaign = "Executive VIP 1-on-1"
+                prob_retained = vip_save_rate / 100.0
+            elif is_high_risk:
+                campaign = "Proactive Pulse Survey"
+                prob_retained = 0.30
+                
+            expected_saved_mrr = spend * prob_retained if is_high_risk else 0.0
+            net_saved_mrr = max(0.0, expected_saved_mrr - discount_cost)
+            
+            sim_records.append({
+                "Customer_ID": cid,
+                "Monthly_Spend_USD": spend,
+                "Churn_Risk_%": risk,
+                "Is_High_Risk": is_high_risk,
+                "Campaign": campaign,
+                "Prob_Retained": prob_retained,
+                "Discount_Cost": discount_cost,
+                "Expected_Saved_MRR": expected_saved_mrr,
+                "Net_Saved_MRR": net_saved_mrr
+            })
+            
+        sim_df = pd.DataFrame(sim_records)
+        
+        # High Risk Aggregates
+        high_risk_sim = sim_df[sim_df["Is_High_Risk"]]
+        total_high_risk_mrr = high_risk_sim["Monthly_Spend_USD"].sum()
+        total_saved_mrr = high_risk_sim["Net_Saved_MRR"].sum()
+        total_discount_cost = high_risk_sim["Discount_Cost"].sum()
+        expected_saved_accounts = high_risk_sim["Prob_Retained"].sum()
+        residual_mrr_at_risk = max(0.0, total_high_risk_mrr - total_saved_mrr)
+        annual_arr_saved = total_saved_mrr * 12.0
+        roi_multiple = (total_saved_mrr / total_discount_cost) if total_discount_cost > 0 else 14.2
+        new_projected_churn_rate = max(0.0, ((len(high_risk_sim) - expected_saved_accounts) / len(results_df) * 100)) if len(results_df) > 0 else 0
+
+        # Simulated ROI KPI Grid
+        st.markdown(f"""
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <div class="kpi-accent-bar accent-sage"></div>
+                <div class="kpi-title">
+                    <span>Projected Preserved MRR</span>
+                    <span class="pill pill-success">Monthly</span>
+                </div>
+                <div class="kpi-number" style="color: #15803D;">+${total_saved_mrr:,.2f}</div>
+                <div class="kpi-meta">
+                    <span><strong>+${annual_arr_saved:,.2f}</strong> annualized ARR protected</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-accent-bar accent-slate"></div>
+                <div class="kpi-title">
+                    <span>Subscribers Saved</span>
+                    <span class="pill pill-neutral">Expected</span>
+                </div>
+                <div class="kpi-number">{expected_saved_accounts:.1f} <span style="font-size: 1.1rem; color: #64748B;">/ {len(high_risk_sim)}</span></div>
+                <div class="kpi-meta">
+                    <span>Churn likelihood drops to <strong>{new_projected_churn_rate:.1f}%</strong></span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-accent-bar accent-amber"></div>
+                <div class="kpi-title">
+                    <span>Campaign Investment</span>
+                    <span class="pill pill-warning">Budget</span>
+                </div>
+                <div class="kpi-number" style="color: #B45309;">${total_discount_cost:,.2f}</div>
+                <div class="kpi-meta">
+                    <span>Estimated promotional discount cost</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-accent-bar accent-rose"></div>
+                <div class="kpi-title">
+                    <span>Net Campaign ROI</span>
+                    <span class="pill pill-danger">Efficiency</span>
+                </div>
+                <div class="kpi-number" style="color: #0F172A;">{roi_multiple:.1f}x</div>
+                <div class="kpi-meta">
+                    <span>Net MRR preserved per $1 discount spend</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Visual Comparison & Campaign Breakdown
+        c_left, c_right = st.columns([1, 1])
+        with c_left:
+            st.markdown("##### Revenue Impact: Baseline vs. Post-Intervention")
+            waterfall_df = pd.DataFrame({
+                "Scenario": ["Baseline At-Risk MRR", "Projected Recovered MRR", "Residual At-Risk MRR"],
+                "Amount ($)": [total_high_risk_mrr, total_saved_mrr, residual_mrr_at_risk]
+            }).set_index("Scenario")
+            st.bar_chart(waterfall_df, color="#64748B")
+
+        with c_right:
+            st.markdown("##### Campaign Portfolio Breakdown")
+            campaign_summary = high_risk_sim.groupby("Campaign").agg(
+                Targeted_Subscribers=("Customer_ID", "count"),
+                Expected_Saves=("Prob_Retained", "sum"),
+                Discount_Budget=("Discount_Cost", "sum"),
+                Recovered_MRR=("Net_Saved_MRR", "sum")
+            ).reset_index()
+            campaign_summary["Expected_Saves"] = campaign_summary["Expected_Saves"].round(1)
+
+            st.dataframe(
+                campaign_summary,
+                column_config={
+                    "Campaign": "Retention Playbook",
+                    "Targeted_Subscribers": st.column_config.NumberColumn("Target Accounts", format="%d"),
+                    "Expected_Saves": st.column_config.NumberColumn("Projected Saves", format="%.1f"),
+                    "Discount_Budget": st.column_config.NumberColumn("Promo Cost", format="$%d"),
+                    "Recovered_MRR": st.column_config.NumberColumn("Net MRR Saved", format="$%d")
+                },
+                hide_index=True,
+                use_container_width=True
+            )
 
     with tab_inspector:
         st.markdown("#### Subscriber Profile Inspector")
